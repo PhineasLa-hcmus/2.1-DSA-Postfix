@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <stack>
 #include <vector>
@@ -43,12 +44,12 @@ class BinTree
 public:
 	void buildFromInfix(std::string str)
 	{
-		std::stack<Node*> postFix;
+		std::stack<Node *> postFix;
 		std::stack<char> opStack;
 		auto pushFromStack = [&]() {
-			Node* right = postFix.top();
+			Node *right = postFix.top();
 			postFix.pop();
-			Node* left = postFix.top();
+			Node *left = postFix.top();
 			postFix.pop();
 			root = new Operator(opStack.top(), left, right);
 			postFix.push(root);
@@ -73,9 +74,7 @@ public:
 			}
 			else if (str[i + 1] == ' ' && isOperator(str[i]))
 			{
-				while (!opStack.empty()
-					&& ((str[i] != '^' && getPrecedence(opStack.top()) >= getPrecedence(str[i]))
-						|| str[i] == '^' && getPrecedence(opStack.top()) > getPrecedence(str[i])))
+				while (!opStack.empty() && ((str[i] != '^' && getPrecedence(opStack.top()) >= getPrecedence(str[i])) || str[i] == '^' && getPrecedence(opStack.top()) > getPrecedence(str[i])))
 				{
 					pushFromStack();
 					root = postFix.top();
@@ -88,7 +87,6 @@ public:
 				postFix.push(new Operand(std::stof(str.substr(i), &afterNum)));
 				i += afterNum - 1;
 			}
-
 		}
 		while (!opStack.empty())
 		{
@@ -109,12 +107,13 @@ private:
 	class Node
 	{
 	public:
-		Node* left = nullptr;
-		Node* right = nullptr;
+		Node *left = nullptr;
+		Node *right = nullptr;
 		Node() = default;
-		Node(Node* left, Node* right)
+		Node(Node *left, Node *right)
 			: left(left), right(right)
-		{}
+		{
+		}
 		virtual float calculate() = 0;
 		virtual std::string toString() = 0;
 		~Node()
@@ -128,7 +127,8 @@ private:
 	public:
 		Operand(float num)
 			: num(num)
-		{}
+		{
+		}
 		float calculate()
 		{
 			return num;
@@ -144,7 +144,7 @@ private:
 	class Operator : public Node
 	{
 	public:
-		Operator(char op, Node* left, Node* right)
+		Operator(char op, Node *left, Node *right)
 			: op(op), Node(left, right)
 		{
 		}
@@ -174,11 +174,45 @@ private:
 	private:
 		char op;
 	};
-	Node* root = nullptr;
+	Node *root = nullptr;
 };
 
-int main()
+bool readFile(const char *dir, int numLine, std::vector<std::string> &readFromFile)
 {
+	std::ifstream fin(dir);
+	if (!fin.is_open())
+		return false;
+	std::string buffer;
+	for (int i = 0; std::getline(fin, buffer) && i < numLine; ++i)
+	{
+		readFromFile.push_back(buffer);
+		std::cout << buffer << std::endl;
+	}
+	return true;
+}
+
+bool writeFile(const char *dir, const std::vector<std::string> output)
+{
+	std::ofstream fout(dir);
+	if (!fout.is_open())
+		return false;
+	for (auto it = output.begin(); it != output.end(); ++it)
+	{
+		std::cout << *it << std::endl;
+	}
+}
+
+int main(int argc, char *argv[])
+{
+	if (argc < 5)
+	{
+		std::cout << "Invalid arguments";
+		//return -1;
+	}
+	std::vector<std::string> input;
+	//readFile(argv[1], atoi(argv[2]), input);
+	readFile("input.txt", 3, input);
+
 	BinTree tree;
 	std::string infix = "(-1) + 2 ^ (2) ^ 3";
 	tree.buildFromInfix(infix);
