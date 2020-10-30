@@ -30,12 +30,25 @@ int getPrecedence(char c)
 	}
 }
 
-int isParenthesis(char c)
+int isOpenBracket(char c)
 {
-	if (c == '(' || c == '[' || c == '{')
+	if (c == '(')
 		return 1;
-	if (c == ')' || c == ']' || c == '}')
+	if (c == '[')
 		return 2;
+	if (c == '{')
+		return 3;
+	return 0;
+}
+
+int isCloseBracket(char c)
+{
+	if (c == ')')
+		return 1;
+	if (c == ']')
+		return 2;
+	if (c == '}')
+		return 3;
 	return 0;
 }
 
@@ -59,14 +72,13 @@ public:
 		{
 			if (str[i] == ' ')
 				continue;
-			int parenthesisType = isParenthesis(str[i]);
-			if (parenthesisType == 1)
+			if (isOpenBracket(str[i]))
 			{
 				opStack.push(str[i]);
 			}
-			else if (parenthesisType == 2)
+			else if (isCloseBracket(str[i]))
 			{
-				while (isParenthesis(opStack.top()) != 1)
+				while (!isOpenBracket(opStack.top()))
 				{
 					pushFromStack();
 				}
