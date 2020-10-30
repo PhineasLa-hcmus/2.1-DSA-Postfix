@@ -7,13 +7,10 @@ bool isNumber(char s);
 bool isOperator(char s);
 bool isOpenBracket(char s);
 bool isCloseBracket(char s);
+bool isFloat(string str, int pos, int length);
 
 float stringToNum(string str, int pos, int length) {
-	float num = 0;
-	for (int i = length; i > 0; i--) {
-		num += ((int)str[pos] - 48) * pow(10, i-1);
-		pos++;
-	}
+	float num = stof(str.substr(pos, length),nullptr);
 	return num;
 }
 
@@ -26,7 +23,7 @@ bool changeStrToArray(string str, vector<float>& number, vector<char>& legalOper
 	//If it's a number put it in number array
 	for (int i = 0; i < str.length(); i++) {
 		for (int j = i; j < str.length(); j++) {
-			if (isNumber(str[j])) {
+			if (isNumber(str[j]) || str[j] == '.') {
 				k = j;
 				length++;
 				if (pos > k) {
@@ -41,22 +38,35 @@ bool changeStrToArray(string str, vector<float>& number, vector<char>& legalOper
 					i = j + 1;
 				break;
 			}
-			if (isCloseBracket(str[j])||str[j] == ' ' || j == str.length() - 1) {
-				number.push_back(stringToNum(str, pos, length));
+			if (isCloseBracket(str[j]) || str[j] == ' ' || j == str.length() - 1) {
+				if (isFloat(str, pos, length))
+					number.push_back(stringToNum(str, pos, length));
+				else return false;
 				length = 0;
 				pos = str.length();
-				if (isCloseBracket(str[j])) { 
-					
-					i = j - 1; 
+				if (isCloseBracket(str[j])) {
+
+					i = j - 1;
 				}
 				else
-				i = j;
+					i = j;
 				break;
 			}
-
 		}
 	}
+	return true;
+}
 
+
+bool isFloat(string str,int pos, int length) {
+	if (str[pos] == '.' || str[pos+length-1] == '.') return false;
+	int numOfDot = 0;
+	int i = pos;
+	while (i < pos + length - 1) {
+		if (str[i] == '.') numOfDot++;
+		if (numOfDot >= 2) return false;
+		i++;
+	}
 	return true;
 }
 
@@ -119,6 +129,10 @@ int main() {
 		cout << "\nstring: ";
 		getline(cin, str);
 		cout << checkValidate(str, number, legalOperator) << endl;
+		/*for (int i = 0; i < number.size(); i++) cout << number[i] << " ";
+		cout << endl;*/
+		number.clear();
+		legalOperator.clear();
 	} while (str != "0");
 
 	/*changeStrToArray(str, number, legalOperator);
