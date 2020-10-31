@@ -5,6 +5,7 @@
 #include <stack>
 #include <vector>
 #include <math.h>
+#include <string.h>
 
 bool isOperator(char c)
 {
@@ -58,15 +59,16 @@ class BinTree
 public:
 	void buildFromInfix(std::string str)
 	{
-		std::stack<Node *> postFix;
+		std::stack<Node *> postfix;
 		std::stack<char> opStack;
+		//lambdas function, pop from opStack to build new sub-tree, then push to postfix
 		auto pushFromStack = [&]() {
-			Node *right = postFix.top();
-			postFix.pop();
-			Node *left = postFix.top();
-			postFix.pop();
-			root = new Operator(opStack.top(), left, right);
-			postFix.push(root);
+			Node *right = postfix.top();
+			postfix.pop();
+			Node *left = postfix.top();
+			postfix.pop();
+			root = new Operator(opStack.top(), left, right); //create tree
+			postfix.push(root);
 			opStack.pop();
 		};
 		for (size_t i = 0; i < str.length(); ++i)
@@ -85,37 +87,37 @@ public:
 				}
 				opStack.pop(); // discard '('
 			}
-			else if (str[i + 1] == ' ' && isOperator(str[i]))
+			else if (str[i + 1] == ' ' /*REDUNDANT, dectect negative number*/ && isOperator(str[i]))
 			{
-				while (!opStack.empty() 
-					&& ((str[i] != '^' && getPrecedence(opStack.top()) >= getPrecedence(str[i])) 
-						|| str[i] == '^' && getPrecedence(opStack.top()) > getPrecedence(str[i])))
+				while (!opStack.empty() && ((str[i] != '^' && getPrecedence(opStack.top()) >= getPrecedence(str[i])) || str[i] == '^' && getPrecedence(opStack.top()) > getPrecedence(str[i])))
 				{
 					pushFromStack();
-					root = postFix.top();
+					root = postfix.top();
 				}
 				opStack.push(str[i]);
 			}
-			else
+			else //push a number to postfix, pending to create a tree
 			{
 				size_t afterNum = 0;
-				postFix.push(new Operand(std::stof(str.substr(i), &afterNum)));
+				postfix.push(new Operand(std::stof(str.substr(i), &afterNum)));
 				i += afterNum - 1;
 			}
 		}
+		//push all remaining operator(s) from opStack to postfix
 		while (!opStack.empty())
 		{
 			pushFromStack();
 		}
 	}
-	std::string toPostfix()
+
+	std::string toPostfix() const
 	{
 		std::stringstream ss;
 		root->toStream(ss);
 		return ss.str();
 	}
 
-	float calculate()
+	float calculate() const
 	{
 		return root->calculate();
 	}
@@ -129,10 +131,11 @@ private:
 		Node() = default;
 		Node(Node *left, Node *right)
 			: left(left), right(right)
-		{}
-		virtual float calculate() = 0;
-		virtual std::string toString() = 0;
-		virtual void toStream(std::stringstream &) = 0;
+		{
+		}
+		virtual float calculate() const = 0;
+		virtual std::string toString() const = 0;
+		virtual void toStream(std::stringstream &) const = 0;
 		~Node()
 		{
 			delete left;
@@ -146,15 +149,15 @@ private:
 			: num(num)
 		{
 		}
-		float calculate()
+		float calculate() const
 		{
 			return num;
 		}
-		std::string toString()
+		std::string toString() const
 		{
 			return std::to_string(num);
 		}
-		void toStream(std::stringstream &ss)
+		void toStream(std::stringstream &ss) const
 		{
 			ss << num;
 		}
@@ -169,7 +172,7 @@ private:
 			: op(op), Node(left, right)
 		{
 		}
-		float calculate()
+		float calculate() const
 		{
 			switch (op)
 			{
@@ -187,11 +190,11 @@ private:
 				throw;
 			}
 		}
-		std::string toString()
+		std::string toString() const
 		{
 			return left->toString() + ' ' + right->toString() + ' ' + op;
 		}
-		void toStream(std::stringstream &ss)
+		void toStream(std::stringstream &ss) const
 		{
 			left->toStream(ss);
 			ss << ' ';
@@ -219,15 +222,12 @@ bool readFile(const char *dir, int numLine, std::vector<std::string> &readFromFi
 	return true;
 }
 
-bool writeFile(const char *dir, const std::vector<std::string> output)
+bool writeFile(const char *dir, const std::stringstream &stream)
 {
 	std::ofstream fout(dir);
 	if (!fout.is_open())
 		return false;
-	for (auto it = output.begin(); it != output.end(); ++it)
-	{
-		std::cout << *it << std::endl;
-	}
+	fout << stream.str();
 	return true;
 }
 
@@ -238,14 +238,47 @@ int main(int argc, char *argv[])
 		std::cout << "Invalid arguments";
 		//return -1;
 	}
-	std::vector<std::string> input;
-	//readFile(argv[1], atoi(argv[2]), input);
-	readFile("input.txt", 3, input);
 
-	BinTree tree;
-	std::string infix = "1.2 + 2 * 3";
-	tree.buildFromInfix(infix);
-	std::cout << "Infix: " << infix << std::endl;
-	std::cout << "Postfix: " << tree.toPostfix() << std::endl;
-	std::cout << "Result: " << tree.calculate() << std::endl;
+	std::vector<std::string> input;
+	if (!readFile(argv[1], atoi(argv[2]), input))
+	{
+		std::cout << "Invalid input file";
+		return -1;
+	}
+
+	std::stringstream outputStream;
+	if (strcmp(argv[3], "-c") == 0)
+	{
+		for (auto i = input.begin(); i != input.end(); ++i)
+		{
+			BinTree tree;
+			tree.buildFromInfix(*i);
+			outputStream << tree.calculate() << std::endl;
+		}
+		writeFile(argv[4], outputStream);
+	}
+	else if (strcmp(argv[3], "-t") == 0)
+	{
+		for (auto i = input.begin(); i != input.end(); ++i)
+		{
+			BinTree tree;
+			tree.buildFromInfix(*i);
+			outputStream << tree.toPostfix() << std::endl;
+		}
+		writeFile(argv[4], outputStream);
+	}
+	else
+	{
+		std::cout << "Invalid arguments";
+		return -1;
+	}
+
+	// DEBUG
+	// readFile("input.txt", 3, input);
+	// BinTree tree;
+	// std::string infix = "1.2 + 2 * 3";
+	// tree.buildFromInfix(infix);
+	// std::cout << "Infix: " << infix << std::endl;
+	// std::cout << "Postfix: " << tree.toPostfix() << std::endl;
+	// std::cout << "Result: " << tree.calculate() << std::endl;
 }
