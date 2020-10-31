@@ -3,7 +3,7 @@
 #include <vector>
 using namespace std;
 
-bool isNumber(char s);
+bool isDigit(char s);
 bool isOperator(char s);
 bool isOpenBracket(char s);
 bool isCloseBracket(char s);
@@ -23,7 +23,7 @@ bool changeStrToArray(string str, vector<float>& number, vector<char>& legalOper
 	//If it's a number put it in number array
 	for (int i = 0; i < str.length(); i++) {
 		for (int j = i; j < str.length(); j++) {
-			if (isNumber(str[j]) || str[j] == '.') {
+			if (isDigit(str[j]) || str[j] == '.') {
 				k = j;
 				length++;
 				if (pos > k) {
@@ -57,20 +57,7 @@ bool changeStrToArray(string str, vector<float>& number, vector<char>& legalOper
 	return true;
 }
 
-
-bool isFloat(string str,int pos, int length) {
-	if (str[pos] == '.' || str[pos+length-1] == '.') return false;
-	int numOfDot = 0;
-	int i = pos;
-	while (i < pos + length - 1) {
-		if (str[i] == '.') numOfDot++;
-		if (numOfDot >= 2) return false;
-		i++;
-	}
-	return true;
-}
-
-bool isNumber(char s) {
+bool isDigit(char s) {
 	if ((int)s >= 48 && (int)s <= 57) return true;
 	return false;
 }
@@ -90,7 +77,9 @@ bool isCloseBracket(char s) {
 	return false;
 }
 
-bool checkValidate(string str, vector<float>& number, vector<char>& legalOperator) {
+bool checkValidate(std::string str) {
+	std::vector<float> number;
+	std::vector<char> legalOperator;
 	if (changeStrToArray(str, number, legalOperator)) {
 		int numberOfOperator = 0;
 		int numOfOpenBracket1 = 0;	//(
@@ -128,7 +117,7 @@ int main() {
 	do {
 		cout << "\nstring: ";
 		getline(cin, str);
-		cout << checkValidate(str, number, legalOperator) << endl;
+		cout << checkValidate(str) << endl;
 		/*for (int i = 0; i < number.size(); i++) cout << number[i] << " ";
 		cout << endl;*/
 		number.clear();

@@ -4,13 +4,9 @@
 #include <string>
 #include <stack>
 #include <vector>
+#include <functional>
 #include <math.h>
 #include <string.h>
-
-bool isOperator(char c)
-{
-	return (c == '+') || (c == '-') || (c == '*') || (c == '/') || (c == '^');
-}
 
 int getPrecedence(char c)
 {
@@ -32,26 +28,151 @@ int getPrecedence(char c)
 	}
 }
 
+bool isOperator(char c)
+{
+	return (c == '+') || (c == '-') || (c == '*') || (c == '/') || (c == '^');
+}
+
 int isOpenBracket(char c)
 {
-	if (c == '(')
+	switch (c)
+	{
+	case '(':
 		return 1;
-	if (c == '[')
+	case '[':
 		return 2;
-	if (c == '{')
+	case '{':
 		return 3;
-	return 0;
+	default:
+		return 0;
+	}
 }
 
 int isCloseBracket(char c)
 {
-	if (c == ')')
+	switch (c)
+	{
+	case ')':
 		return 1;
-	if (c == ']')
+	case ']':
 		return 2;
-	if (c == '}')
+	case '}':
 		return 3;
-	return 0;
+	default:
+		return 0;
+	}
+}
+
+bool isFloat(std::string str, int pos, int length)
+{
+	if (str[pos] == '.' || str[pos + length - 1] == '.')
+		return false;
+	int numOfDot = 0;
+	int i = pos;
+	while (i < pos + length - 1)
+	{
+		if (str[i] == '.')
+			numOfDot++;
+		if (numOfDot >= 2)
+			return false;
+		i++;
+	}
+	return true;
+}
+
+bool isDigit(char c)
+{
+	return c >= '0' && c <= '9';
+}
+
+bool changeStrToArray(std::string str, std::vector<float> &number, std::vector<char> &legalOperator)
+{
+	int pos = str.length(), length = 0;
+	int k;
+
+	if (isOperator(str[0]) || isOperator(str[str.length() - 1]) || isCloseBracket(str[0]) || isOperator(str[str.length() - 1]))
+		return false;
+
+	//If it's a number put it in number array
+	for (int i = 0; i < str.length(); i++)
+	{
+		for (int j = i; j < str.length(); j++)
+		{
+			if (isDigit(str[j]) || str[j] == '.')
+			{
+				k = j;
+				length++;
+				if (pos > k)
+				{
+					pos = k;
+				}
+			}
+			if (isOperator(str[i]) || isCloseBracket(str[i]) || isOpenBracket(str[i]))
+			{
+				legalOperator.push_back(str[i]);
+				if (isOpenBracket(str[i]))
+					i = j;
+				else
+					i = j + 1;
+				break;
+			}
+			if (isCloseBracket(str[j]) || str[j] == ' ' || j == str.length() - 1)
+			{
+				if (isFloat(str, pos, length))
+					number.push_back(stof(str.substr(pos, length)));
+				else
+					return false;
+				length = 0;
+				pos = str.length();
+				if (isCloseBracket(str[j]))
+				{
+
+					i = j - 1;
+				}
+				else
+					i = j;
+				break;
+			}
+		}
+	}
+	return true;
+}
+
+bool checkValidate(std::string str)
+{
+	std::vector<float> number;
+	std::vector<char> legalOperator;
+	if (changeStrToArray(str, number, legalOperator))
+	{
+		int numberOfOperator = 0;
+		int numOfOpenBracket1 = 0;	//(
+		int numOfOpenBracket2 = 0;	//[
+		int numOfOpenBracket3 = 0;	//{
+		int numOfCloseBracket1 = 0; //)
+		int numOfCloseBracket2 = 0; //]
+		int numOfCloseBracket3 = 0; //}
+
+		for (int i = 0; i < legalOperator.size(); i++)
+		{
+			if (isOperator(legalOperator[i]))
+				numberOfOperator++;
+			if (legalOperator[i] == '(')
+				numOfOpenBracket1++;
+			else if (legalOperator[i] == '[')
+				numOfOpenBracket2++;
+			else if (legalOperator[i] == '{')
+				numOfOpenBracket3++;
+			else if (legalOperator[i] == ')')
+				numOfCloseBracket1++;
+			else if (legalOperator[i] == ']')
+				numOfCloseBracket2++;
+			else if (legalOperator[i] == '}')
+				numOfCloseBracket3++;
+		}
+		if ((number.size() == (numberOfOperator + 1)) && numOfOpenBracket1 == numOfCloseBracket1 && numOfOpenBracket2 == numOfCloseBracket2 && numOfOpenBracket3 == numOfCloseBracket3)
+			return true;
+	}
+	return false;
 }
 
 class BinTree
@@ -95,6 +216,7 @@ public:
 					root = postfix.top();
 				}
 				opStack.push(str[i]);
+				++i;
 			}
 			else //push a number to postfix, pending to create a tree
 			{
@@ -246,32 +368,40 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	std::stringstream outputStream;
+	std::function<void(const BinTree &, std::stringstream &)> outputMode;
 	if (strcmp(argv[3], "-c") == 0)
 	{
-		for (auto i = input.begin(); i != input.end(); ++i)
-		{
-			BinTree tree;
-			tree.buildFromInfix(*i);
-			outputStream << tree.calculate() << std::endl;
-		}
-		writeFile(argv[4], outputStream);
+		outputMode = [](const BinTree &tree, std::stringstream &ss) {
+			ss << tree.calculate() << std::endl;
+		};
 	}
 	else if (strcmp(argv[3], "-t") == 0)
 	{
-		for (auto i = input.begin(); i != input.end(); ++i)
-		{
-			BinTree tree;
-			tree.buildFromInfix(*i);
-			outputStream << tree.toPostfix() << std::endl;
-		}
-		writeFile(argv[4], outputStream);
+		outputMode = [](const BinTree &tree, std::stringstream &ss) {
+			ss << tree.toPostfix() << std::endl;
+		};
 	}
 	else
 	{
 		std::cout << "Invalid arguments";
 		return -1;
 	}
+
+	std::stringstream outputStream;
+	for (auto i = input.begin(); i != input.end(); ++i)
+	{
+		if (checkValidate(*i))
+		{
+			BinTree tree;
+			tree.buildFromInfix(*i);
+			outputMode(tree, outputStream);
+		}
+		else
+		{
+			outputStream << 'E' << std::endl;
+		}
+	}
+	writeFile(argv[4], outputStream);
 
 	// DEBUG
 	// readFile("input.txt", 3, input);
