@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <stack>
 #include <vector>
@@ -86,7 +87,9 @@ public:
 			}
 			else if (str[i + 1] == ' ' && isOperator(str[i]))
 			{
-				while (!opStack.empty() && ((str[i] != '^' && getPrecedence(opStack.top()) >= getPrecedence(str[i])) || str[i] == '^' && getPrecedence(opStack.top()) > getPrecedence(str[i])))
+				while (!opStack.empty() 
+					&& ((str[i] != '^' && getPrecedence(opStack.top()) >= getPrecedence(str[i])) 
+						|| str[i] == '^' && getPrecedence(opStack.top()) > getPrecedence(str[i])))
 				{
 					pushFromStack();
 					root = postFix.top();
@@ -107,7 +110,9 @@ public:
 	}
 	std::string toPostfix()
 	{
-		return root->toString();
+		std::stringstream ss;
+		root->toStream(ss);
+		return ss.str();
 	}
 
 	float calculate()
@@ -124,10 +129,10 @@ private:
 		Node() = default;
 		Node(Node *left, Node *right)
 			: left(left), right(right)
-		{
-		}
+		{}
 		virtual float calculate() = 0;
 		virtual std::string toString() = 0;
+		virtual void toStream(std::stringstream &) = 0;
 		~Node()
 		{
 			delete left;
@@ -148,6 +153,10 @@ private:
 		std::string toString()
 		{
 			return std::to_string(num);
+		}
+		void toStream(std::stringstream &ss)
+		{
+			ss << num;
 		}
 
 	private:
@@ -182,6 +191,13 @@ private:
 		{
 			return left->toString() + ' ' + right->toString() + ' ' + op;
 		}
+		void toStream(std::stringstream &ss)
+		{
+			left->toStream(ss);
+			ss << ' ';
+			right->toStream(ss);
+			ss << ' ' << op;
+		}
 
 	private:
 		char op;
@@ -212,6 +228,7 @@ bool writeFile(const char *dir, const std::vector<std::string> output)
 	{
 		std::cout << *it << std::endl;
 	}
+	return true;
 }
 
 int main(int argc, char *argv[])
@@ -226,9 +243,9 @@ int main(int argc, char *argv[])
 	readFile("input.txt", 3, input);
 
 	BinTree tree;
-	std::string infix = "(-1) + 2 ^ (2) ^ 3";
+	std::string infix = "1.2 + 2 * 3";
 	tree.buildFromInfix(infix);
-	std::cout << tree.toPostfix() << std::endl;
 	std::cout << "Infix: " << infix << std::endl;
+	std::cout << "Postfix: " << tree.toPostfix() << std::endl;
 	std::cout << "Result: " << tree.calculate() << std::endl;
 }
