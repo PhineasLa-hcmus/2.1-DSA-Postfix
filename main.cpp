@@ -208,7 +208,7 @@ public:
 				}
 				opStack.pop(); // discard '('
 			}
-			else if (str[i + 1] == ' ' /*REDUNDANT, dectect negative number*/ && isOperator(str[i]))
+			else if (str[i + 1] == ' ' /*REDUNDANT, detect negative number*/ && isOperator(str[i]))
 			{
 				while (!opStack.empty() && ((str[i] != '^' && getPrecedence(opStack.top()) >= getPrecedence(str[i])) || str[i] == '^' && getPrecedence(opStack.top()) > getPrecedence(str[i])))
 				{
@@ -358,7 +358,7 @@ int main(int argc, char *argv[])
 	if (argc < 5)
 	{
 		std::cout << "Invalid arguments";
-		//return -1;
+		return -1;
 	}
 
 	std::vector<std::string> input;
