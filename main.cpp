@@ -355,60 +355,66 @@ bool writeFile(const char *dir, const std::stringstream &stream)
 
 int main(int argc, char *argv[])
 {
-	if (argc < 5)
-	{
-		std::cout << "Invalid arguments";
-		return -1;
-	}
+	// if (argc < 5)
+	// {
+	// 	std::cout << "Invalid arguments";
+	// 	return -1;
+	// }
 
+	// std::vector<std::string> input;
+	// if (!readFile(argv[1], atoi(argv[2]), input))
+	// {
+	// 	std::cout << "Invalid input file";
+	// 	return -1;
+	// }
+
+	// std::function<void(const BinTree &, std::stringstream &)> outputMode;
+	// if (strcmp(argv[3], "-c") == 0)
+	// {
+	// 	outputMode = [](const BinTree &tree, std::stringstream &ss) {
+	// 		ss << tree.calculate() << std::endl;
+	// 	};
+	// }
+	// else if (strcmp(argv[3], "-t") == 0)
+	// {
+	// 	outputMode = [](const BinTree &tree, std::stringstream &ss) {
+	// 		ss << tree.toPostfix() << std::endl;
+	// 	};
+	// }
+	// else
+	// {
+	// 	std::cout << "Invalid arguments";
+	// 	return -1;
+	// }
+
+	// std::stringstream outputStream;
+	// for (auto i = input.begin(); i != input.end(); ++i)
+	// {
+	// 	if (checkValidate(*i))
+	// 	{
+	// 		BinTree tree;
+	// 		tree.buildFromInfix(*i);
+	// 		outputMode(tree, outputStream);
+	// 	}
+	// 	else
+	// 	{
+	// 		outputStream << 'E' << std::endl;
+	// 	}
+	// }
+	// writeFile(argv[4], outputStream);
+
+	// DEBUG
 	std::vector<std::string> input;
-	if (!readFile(argv[1], atoi(argv[2]), input))
-	{
-		std::cout << "Invalid input file";
-		return -1;
-	}
-
-	std::function<void(const BinTree &, std::stringstream &)> outputMode;
-	if (strcmp(argv[3], "-c") == 0)
-	{
-		outputMode = [](const BinTree &tree, std::stringstream &ss) {
-			ss << tree.calculate() << std::endl;
-		};
-	}
-	else if (strcmp(argv[3], "-t") == 0)
-	{
-		outputMode = [](const BinTree &tree, std::stringstream &ss) {
-			ss << tree.toPostfix() << std::endl;
-		};
-	}
-	else
-	{
-		std::cout << "Invalid arguments";
-		return -1;
-	}
-
-	std::stringstream outputStream;
+	readFile("input.txt", 4, input);
 	for (auto i = input.begin(); i != input.end(); ++i)
 	{
 		if (checkValidate(*i))
 		{
 			BinTree tree;
 			tree.buildFromInfix(*i);
-			outputMode(tree, outputStream);
-		}
-		else
-		{
-			outputStream << 'E' << std::endl;
+			std::cout << "Infix: " << *i << std::endl;
+			std::cout << "Postfix: " << tree.toPostfix() << std::endl;
+			std::cout << "Result: " << tree.calculate() << std::endl;
 		}
 	}
-	writeFile(argv[4], outputStream);
-
-	// DEBUG
-	// readFile("input.txt", 3, input);
-	// BinTree tree;
-	// std::string infix = "1.2 + 2 * 3";
-	// tree.buildFromInfix(infix);
-	// std::cout << "Infix: " << infix << std::endl;
-	// std::cout << "Postfix: " << tree.toPostfix() << std::endl;
-	// std::cout << "Result: " << tree.calculate() << std::endl;
 }
