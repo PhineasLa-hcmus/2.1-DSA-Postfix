@@ -10,7 +10,7 @@ bool isCloseBracket(char s);
 bool isFloat(string str, int pos, int length);
 
 float stringToNum(string str, int pos, int length) {
-	float num = stof(str.substr(pos, length),nullptr);
+	float num = stof(str.substr(pos, length), nullptr);
 	return num;
 }
 
@@ -57,6 +57,8 @@ bool changeStrToArray(string str, vector<float>& number, vector<char>& legalOper
 	return true;
 }
 
+
+
 bool isDigit(char s) {
 	if ((int)s >= 48 && (int)s <= 57) return true;
 	return false;
@@ -72,14 +74,23 @@ bool isOpenBracket(char s) {
 	return false;
 }
 
+bool isFloat(string str, int pos, int length) {
+	if (str[pos] == '.' || str[pos + length - 1] == '.') return false;
+	int numOfDot = 0;
+	int i = pos;
+	while (i < pos + length - 1) {
+		if (str[i] == '.') numOfDot++;
+		if (numOfDot >= 2) return false;
+		i++;
+	}
+	return true;
+}
 bool isCloseBracket(char s) {
 	if (s == ')' || s == ']' || s == '}') return true;
 	return false;
 }
 
-bool checkValidate(std::string str) {
-	std::vector<float> number;
-	std::vector<char> legalOperator;
+bool checkValidate(string str, vector<float>& number, vector<char>& legalOperator) {
 	if (changeStrToArray(str, number, legalOperator)) {
 		int numberOfOperator = 0;
 		int numOfOpenBracket1 = 0;	//(
@@ -88,7 +99,7 @@ bool checkValidate(std::string str) {
 		int numOfCloseBracket1 = 0;	//)
 		int numOfCloseBracket2 = 0;	//]
 		int numOfCloseBracket3 = 0;	//}
-	
+
 		for (int i = 0; i < legalOperator.size(); i++) {
 			cout << legalOperator[i] << endl;
 			if (isOperator(legalOperator[i])) numberOfOperator++;
@@ -117,7 +128,7 @@ int main() {
 	do {
 		cout << "\nstring: ";
 		getline(cin, str);
-		cout << checkValidate(str) << endl;
+		cout << checkValidate(str, number, legalOperator) << endl;
 		/*for (int i = 0; i < number.size(); i++) cout << number[i] << " ";
 		cout << endl;*/
 		number.clear();
