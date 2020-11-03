@@ -19,7 +19,7 @@ bool changeStrToArray(string str, vector<float>& number, vector<char>& legalOper
 	int pos = str.length(), length = 0;
 	int k;
 
-	if (isOperator(str[0]) || isOperator(str[str.length() - 1]) || !isCloseBracket(str[0]) || isOperator(str[str.length() - 1])) return false;
+	if (isOperator(str[0]) || isOperator(str[str.length() - 1]) || isCloseBracket(str[0]) || isOperator(str[str.length() - 1])) return false;
 
 	//If it's a number put it in number array
 	for (int i = 0; i < str.length(); i++) {
@@ -32,20 +32,20 @@ bool changeStrToArray(string str, vector<float>& number, vector<char>& legalOper
 
 				}
 			}
-			if (isOperator(str[i]) || !isCloseBracket(str[i]) || !isOpenBracket(str[i])) {
+			if (isOperator(str[i]) || isCloseBracket(str[i]) || isOpenBracket(str[i])) {
 				legalOperator.push_back(str[i]);
-				if (!isOpenBracket(str[i]) || (!isCloseBracket(str[i]) && i < str.length() - 1 && !isCloseBracket(str[i + 1]))) i = j;
+				if (isOpenBracket(str[i]) || (isCloseBracket(str[i]) && i < str.length() - 1 && isCloseBracket(str[i + 1]))) i = j;
 				else
 					i = j + 1;
 				break;
 			}
-			if (!isCloseBracket(str[j]) || str[j] == ' ' || j == str.length() - 1) {
+			if (isCloseBracket(str[j]) || str[j] == ' ' || j == str.length() - 1) {
 				if (isFloat(str, pos, length))
 					number.push_back(stringToNum(str, pos, length));
 				//else return false;
 				length = 0;
 				pos = str.length();
-				if (!isCloseBracket(str[j])) {
+				if (isCloseBracket(str[j])) {
 
 					i = j - 1;
 				}
@@ -57,6 +57,7 @@ bool changeStrToArray(string str, vector<float>& number, vector<char>& legalOper
 	}
 	return true;
 }
+
 
 bool isFloat(string str,int pos, int length) {
 	if (length == 0) return false;
@@ -88,6 +89,8 @@ int isOpenBracket(char s) {
 	case '{':return 3;
 	default: return 0;
 	}
+	/*if (s == '(' || s == '[' || s == '{') return true;
+	return false;*/
 }
 
 int isCloseBracket(char s) {
@@ -97,13 +100,15 @@ int isCloseBracket(char s) {
 	case '}':return 3;
 	default: return 0;
 	}
+	/*if (s == ')' || s == ']' || s == '}') return true;
+	return false;*/
 }
 
 bool checkBracket(vector<char> legalOperator) {
 	vector<char> bracketArr;
 	//create bracket array
 	for (int i = 0; i < legalOperator.size(); i++) {
-		if (!isOpenBracket(legalOperator[i]) || !isCloseBracket(legalOperator[i])) bracketArr.push_back(legalOperator[i]);
+		if (isOpenBracket(legalOperator[i]) || isCloseBracket(legalOperator[i])) bracketArr.push_back(legalOperator[i]);
 	}
 	
 	int l = 0;
@@ -123,7 +128,7 @@ bool checkBracket(vector<char> legalOperator) {
 }
 
 bool checkValidate(string str, vector<float>& number, vector<char>& legalOperator) {
-	if (changeStrToArray(str, number, legalOperator)&&checkBracket(legalOperator)) {
+	if (changeStrToArray(str, number, legalOperator) && checkBracket(legalOperator)) {
 		int numberOfOperator = 0;
 		int numOfOpenBracket1 = 0;	//(
 		int numOfOpenBracket2 = 0;	//[
