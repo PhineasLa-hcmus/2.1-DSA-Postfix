@@ -33,7 +33,7 @@ bool changeStrToArray(string str, vector<float>& number, vector<char>& legalOper
 			}
 			if (isOperator(str[i]) || isCloseBracket(str[i]) || isOpenBracket(str[i])) {
 				legalOperator.push_back(str[i]);
-				if (isOpenBracket(str[i])|| (i < str.length() - 1 && isCloseBracket(str[i + 1]))) i = j;
+				if (isOpenBracket(str[i])|| (isCloseBracket(str[i]) && i < str.length() - 1 && isCloseBracket(str[i + 1]))) i = j;
 				else
 					i = j + 1;
 				break;
