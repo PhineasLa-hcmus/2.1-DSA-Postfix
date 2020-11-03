@@ -54,63 +54,117 @@ int isCloseBracket(char c)
 	}
 }
 
-bool validate(const std::string &str)
-{
-	bool mustOperator = false;
-	std::stack<int> bracketType;
-	for (auto i = str.begin(); i != str.end(); ++i)
-	{
-		if (isspace(*i))
-			continue;
-		else if (mustOperator)
-		{
-			if (int bracket = isCloseBracket(*i))
-			{
-				if (!bracketType.empty() && bracket == bracketType.top())
-					bracketType.pop();
-				else
-					return false;
-			}
-			else if (isOperator(*i))
-				mustOperator = false;
-			else
-				return false;
-		}
-		else
-		{
-			if (int bracket = isOpenBracket(*i))
-			{
-				if (bracketType.empty() 
-				|| (!bracketType.empty() && bracket <= bracketType.top()))
-					bracketType.push(bracket);
-				else
-					return false;
-			}
-			else if (isdigit(*i))
-			{
-				bool foundDot = false;
-				for (; i != str.end(); ++i)
-				{
-					if (*i == '.')
-						if (foundDot == false)
-							foundDot = true;
-						else
-							return false;
-					else if (!isdigit(*i))
-						break;
+bool isFloat(const std::string& str,int pos, int length) {
+	if (length == 0) return false;
+	if (str[pos] == '.' || str[pos+length-1] == '.') return false;
+	int numOfDot = 0;
+	int i = pos;
+	while (i < pos + length - 1) {
+		if (str[i] == '.') numOfDot++;
+		if (numOfDot >= 2) return false;
+		i++;
+	}
+	return true;
+}
+
+float stringToNum(std::string str, int pos, int length) {
+	float num = stof(str.substr(pos, length), nullptr);
+	return num;
+}
+
+bool changeStrToArray(const std::string& str, std::vector<float>& number, std::vector<char>& legalOperator) {
+	int pos = str.length(), length = 0;
+	int k;
+
+	if (isOperator(str[0]) || isOperator(str[str.length() - 1]) || !isCloseBracket(str[0]) || isOperator(str[str.length() - 1])) return false;
+
+	//If it's a number put it in number array
+	for (int i = 0; i < str.length(); i++) {
+		for (int j = i; j < str.length(); j++) {
+			if (isdigit(str[j]) || str[j] == '.') {
+				k = j;
+				length++;
+				if (pos > k) {
+					pos = k;
+
 				}
-				--i;
-				if (*i == '.')
-					return false;
-				mustOperator = true;
 			}
-			else
-				return false;
+			if (isOperator(str[i]) || !isCloseBracket(str[i]) || !isOpenBracket(str[i])) {
+				legalOperator.push_back(str[i]);
+				if (!isOpenBracket(str[i]) || (!isCloseBracket(str[i]) && i < str.length() - 1 && !isCloseBracket(str[i + 1]))) i = j;
+				else
+					i = j + 1;
+				break;
+			}
+			if (!isCloseBracket(str[j]) || str[j] == ' ' || j == str.length() - 1) {
+				if (isFloat(str, pos, length))
+					number.push_back(stringToNum(str, pos, length));
+				//else return false;
+				length = 0;
+				pos = str.length();
+				if (!isCloseBracket(str[j])) {
+
+					i = j - 1;
+				}
+				else
+					i = j;
+				break;
+			}
 		}
 	}
-	if (!bracketType.empty())
-		return false;
 	return true;
+}
+
+bool checkBracket(std::vector<char> legalOperator) {
+	std::vector<char> bracketArr;
+	//create bracket array
+	for (int i = 0; i < legalOperator.size(); i++) {
+		if (!isOpenBracket(legalOperator[i]) || !isCloseBracket(legalOperator[i])) bracketArr.push_back(legalOperator[i]);
+	}
+	
+	int l = 0;
+	int r = bracketArr.size() - 1;
+	int bracketValue = 4;	//save value of the biggest bracket
+	
+	while (l < r) {
+		if (isOpenBracket(bracketArr[l]) == isCloseBracket(bracketArr[r]) && isOpenBracket(bracketArr[l])<=bracketValue) {
+			bracketValue = isOpenBracket(bracketArr[l]);
+			l++;
+			r--;
+		}
+		else return false;
+	}
+	return true;
+}
+
+bool checkValidate(const std::string& str) {
+	std::vector<float> number;
+	std::vector<char> legalOperator;
+	if (changeStrToArray(str, number, legalOperator)&&checkBracket(legalOperator)) {
+		int numberOfOperator = 0;
+		int numOfOpenBracket1 = 0;	//(
+		int numOfOpenBracket2 = 0;	//[
+		int numOfOpenBracket3 = 0;	//{
+		int numOfCloseBracket1 = 0;	//)
+		int numOfCloseBracket2 = 0;	//]
+		int numOfCloseBracket3 = 0;	//}
+	
+		for (int i = 0; i < legalOperator.size(); i++) {
+			if (isOperator(legalOperator[i])) numberOfOperator++;
+			if (legalOperator[i] == '(') numOfOpenBracket1++;
+			else if (legalOperator[i] == '[') numOfOpenBracket2++;
+			else if (legalOperator[i] == '{') numOfOpenBracket3++;
+			else if (legalOperator[i] == ')')
+				numOfCloseBracket1++;
+			else if (legalOperator[i] == ']') numOfCloseBracket2++;
+			else if (legalOperator[i] == '}') numOfCloseBracket3++;
+		}
+		if ((number.size() == (numberOfOperator + 1))
+			&& numOfOpenBracket1 == numOfCloseBracket1
+			&& numOfOpenBracket2 == numOfCloseBracket2
+			&& numOfOpenBracket3 == numOfCloseBracket3) return true;
+	}
+	return false;
 }
 
 class BinTree
@@ -341,12 +395,12 @@ int main(int argc, char *argv[])
 	// }
 	// writeFile(argv[4], outputStream);
 
-	// DEBUG
+	//DEBUG
 	std::vector<std::string> input;
 	readFile("input.txt", 16, input);
 	for (auto i = input.begin(); i != input.end(); ++i)
 	{
-		if (validate(*i))
+		if (checkValidate(*i))
 		{
 			BinTree tree;
 			tree.buildFromInfix(*i);

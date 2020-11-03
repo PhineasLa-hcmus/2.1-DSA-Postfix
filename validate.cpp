@@ -58,7 +58,6 @@ bool changeStrToArray(string str, vector<float>& number, vector<char>& legalOper
 	return true;
 }
 
-
 bool isFloat(string str,int pos, int length) {
 	if (length == 0) return false;
 	if (str[pos] == '.' || str[pos+length-1] == '.') return false;
