@@ -36,14 +36,10 @@ int isOpenBracket(char c)
 {
 	switch (c)
 	{
-	case '(':
-		return 1;
-	case '[':
-		return 2;
-	case '{':
-		return 3;
-	default:
-		return 0;
+	case '(': return 1;
+	case '[': return 2;
+	case '{': return 3;
+	default: return 0;
 	}
 }
 
@@ -51,124 +47,11 @@ int isCloseBracket(char c)
 {
 	switch (c)
 	{
-	case ')':
-		return 1;
-	case ']':
-		return 2;
-	case '}':
-		return 3;
-	default:
-		return 0;
+	case ')': return 1;
+	case ']': return 2;
+	case '}': return 3;
+	default: return 0;
 	}
-}
-
-bool isFloat(const std::string &str, int pos, int length)
-{
-	if (length == 0)
-		return false;
-	if (str[pos] == '.' || str[pos + length - 1] == '.')
-		return false;
-	int numOfDot = 0;
-	int i = pos;
-	while (i < pos + length - 1)
-	{
-		if (str[i] == '.')
-			numOfDot++;
-		if (numOfDot >= 2)
-			return false;
-		i++;
-	}
-	return true;
-}
-
-bool changeStrToArray(std::string str, std::vector<float> &number, std::vector<char> &legalOperator)
-{
-	int pos = str.length(), length = 0;
-	int k;
-
-	if (isOperator(str[0]) || isOperator(str[str.length() - 1]) || isCloseBracket(str[0]) || isOperator(str[str.length() - 1]))
-		return false;
-
-	//If it's a number put it in number array
-	for (int i = 0; i < str.length(); i++)
-	{
-		for (int j = i; j < str.length(); j++)
-		{
-			if (isdigit(str[j]) || str[j] == '.')
-			{
-				k = j;
-				length++;
-				if (pos > k)
-				{
-					pos = k;
-				}
-			}
-			if (isOperator(str[i]) || isCloseBracket(str[i]) || isOpenBracket(str[i]))
-			{
-				legalOperator.push_back(str[i]);
-				if (isOpenBracket(str[i]))
-					i = j;
-				else
-					i = j + 1;
-				break;
-			}
-			if (isCloseBracket(str[j]) || str[j] == ' ' || j == str.length() - 1)
-			{
-				if (isFloat(str, pos, length))
-					number.push_back(stof(str.substr(pos, length)));
-				//else
-				//	return false;
-				length = 0;
-				pos = str.length();
-				if (isCloseBracket(str[j]))
-				{
-
-					i = j - 1;
-				}
-				else
-					i = j;
-				break;
-			}
-		}
-	}
-	return true;
-}
-
-bool checkValidate(std::string str)
-{
-	std::vector<float> number;
-	std::vector<char> legalOperator;
-	if (changeStrToArray(str, number, legalOperator))
-	{
-		int numberOfOperator = 0;
-		int numOfOpenBracket1 = 0;	//(
-		int numOfOpenBracket2 = 0;	//[
-		int numOfOpenBracket3 = 0;	//{
-		int numOfCloseBracket1 = 0; //)
-		int numOfCloseBracket2 = 0; //]
-		int numOfCloseBracket3 = 0; //}
-
-		for (int i = 0; i < legalOperator.size(); i++)
-		{
-			if (isOperator(legalOperator[i]))
-				numberOfOperator++;
-			if (legalOperator[i] == '(')
-				numOfOpenBracket1++;
-			else if (legalOperator[i] == '[')
-				numOfOpenBracket2++;
-			else if (legalOperator[i] == '{')
-				numOfOpenBracket3++;
-			else if (legalOperator[i] == ')')
-				numOfCloseBracket1++;
-			else if (legalOperator[i] == ']')
-				numOfCloseBracket2++;
-			else if (legalOperator[i] == '}')
-				numOfCloseBracket3++;
-		}
-		if ((number.size() == (numberOfOperator + 1)) && numOfOpenBracket1 == numOfCloseBracket1 && numOfOpenBracket2 == numOfCloseBracket2 && numOfOpenBracket3 == numOfCloseBracket3)
-			return true;
-	}
-	return false;
 }
 
 bool validate(const std::string &str)
@@ -214,9 +97,7 @@ bool validate(const std::string &str)
 						else
 							return false;
 					else if (!isdigit(*i))
-					{
 						break;
-					}
 				}
 				--i;
 				if (*i == '.')
