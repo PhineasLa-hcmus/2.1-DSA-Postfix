@@ -14,14 +14,13 @@ int getPrecedence(char c)
 	{
 	case '^':
 		return 4;
-	case '/':
-	case '*':
+	case '/': case '*':
 		return 3;
-	case '-':
-	case '+':
+	case '-': case '+':
 		return 2;
-	case '(':
-	case ')':
+	case '(': case ')':
+	case '[': case ']':
+	case '{': case '}':
 		return 1;
 	default:
 		throw;
@@ -63,8 +62,10 @@ int isCloseBracket(char c)
 	}
 }
 
-bool isFloat(std::string str, int pos, int length)
+bool isFloat(const std::string &str, int pos, int length)
 {
+	if (length == 0)
+		return false;
 	if (str[pos] == '.' || str[pos + length - 1] == '.')
 		return false;
 	int numOfDot = 0;
@@ -80,11 +81,6 @@ bool isFloat(std::string str, int pos, int length)
 	return true;
 }
 
-bool isDigit(char c)
-{
-	return c >= '0' && c <= '9';
-}
-
 bool changeStrToArray(std::string str, std::vector<float> &number, std::vector<char> &legalOperator)
 {
 	int pos = str.length(), length = 0;
@@ -98,7 +94,7 @@ bool changeStrToArray(std::string str, std::vector<float> &number, std::vector<c
 	{
 		for (int j = i; j < str.length(); j++)
 		{
-			if (isDigit(str[j]) || str[j] == '.')
+			if (isdigit(str[j]) || str[j] == '.')
 			{
 				k = j;
 				length++;
@@ -120,8 +116,8 @@ bool changeStrToArray(std::string str, std::vector<float> &number, std::vector<c
 			{
 				if (isFloat(str, pos, length))
 					number.push_back(stof(str.substr(pos, length)));
-				else
-					return false;
+				//else
+				//	return false;
 				length = 0;
 				pos = str.length();
 				if (isCloseBracket(str[j]))
@@ -175,10 +171,71 @@ bool checkValidate(std::string str)
 	return false;
 }
 
+bool validate(const std::string &str)
+{
+	bool mustOperator = false;
+	std::stack<int> bracketType;
+	for (auto i = str.begin(); i != str.end(); ++i)
+	{
+		if (isspace(*i))
+			continue;
+		else if (mustOperator)
+		{
+			if (int bracket = isCloseBracket(*i))
+			{
+				if (!bracketType.empty() && bracket == bracketType.top())
+					bracketType.pop();
+				else
+					return false;
+			}
+			else if (isOperator(*i))
+				mustOperator = false;
+			else
+				return false;
+		}
+		else
+		{
+			if (int bracket = isOpenBracket(*i))
+			{
+				if (bracketType.empty() 
+				|| (!bracketType.empty() && bracket <= bracketType.top()))
+					bracketType.push(bracket);
+				else
+					return false;
+			}
+			else if (isdigit(*i))
+			{
+				bool foundDot = false;
+				for (; i != str.end(); ++i)
+				{
+					if (*i == '.')
+						if (foundDot == false)
+							foundDot = true;
+						else
+							return false;
+					else if (!isdigit(*i))
+					{
+						break;
+					}
+				}
+				--i;
+				if (*i == '.')
+					return false;
+				mustOperator = true;
+			}
+			else
+				return false;
+		}
+	}
+	if (!bracketType.empty())
+		return false;
+	return true;
+}
+
 class BinTree
 {
 public:
-	void buildFromInfix(std::string str)
+	void buildFromInfix(const std::string& str)
 	{
 		std::stack<Node *> postfix;
 		std::stack<char> opStack;
@@ -213,7 +270,7 @@ public:
 				while (!opStack.empty() && ((str[i] != '^' && getPrecedence(opStack.top()) >= getPrecedence(str[i])) || str[i] == '^' && getPrecedence(opStack.top()) > getPrecedence(str[i])))
 				{
 					pushFromStack();
-					root = postfix.top();
+					//root = postfix.top();
 				}
 				opStack.push(str[i]);
 				++i;
@@ -230,6 +287,7 @@ public:
 		{
 			pushFromStack();
 		}
+		root = postfix.top();
 	}
 
 	std::string toPostfix() const
@@ -339,7 +397,6 @@ bool readFile(const char *dir, int numLine, std::vector<std::string> &readFromFi
 	for (int i = 0; std::getline(fin, buffer) && i < numLine; ++i)
 	{
 		readFromFile.push_back(buffer);
-		std::cout << buffer << std::endl;
 	}
 	return true;
 }
@@ -405,10 +462,10 @@ int main(int argc, char *argv[])
 
 	// DEBUG
 	std::vector<std::string> input;
-	readFile("input.txt", 4, input);
+	readFile("input.txt", 16, input);
 	for (auto i = input.begin(); i != input.end(); ++i)
 	{
-		if (checkValidate(*i))
+		if (validate(*i))
 		{
 			BinTree tree;
 			tree.buildFromInfix(*i);
