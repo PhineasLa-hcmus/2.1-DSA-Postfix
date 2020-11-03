@@ -342,6 +342,7 @@ bool readFile(const char *dir, int numLine, std::vector<std::string> &readFromFi
 	{
 		readFromFile.push_back(buffer);
 	}
+	fin.close();
 	return true;
 }
 
@@ -351,6 +352,7 @@ bool writeFile(const char *dir, const std::stringstream &stream)
 	if (!fout.is_open())
 		return false;
 	fout << stream.str();
+	fout.close();
 	return true;
 }
 
