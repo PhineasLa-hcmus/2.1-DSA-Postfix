@@ -27,11 +27,13 @@ int getPrecedence(char c)
 	}
 }
 
+//check if it is a correct operator (e.g: +, -, *, /, ^)
 bool isOperator(char c)
 {
 	return (c == '+') || (c == '-') || (c == '*') || (c == '/') || (c == '^');
 }
 
+//check if it is an open bracket
 int isOpenBracket(char c)
 {
 	switch (c)
@@ -43,6 +45,7 @@ int isOpenBracket(char c)
 	}
 }
 
+//check if it is a close bracket
 int isCloseBracket(char c)
 {
 	switch (c)
@@ -54,6 +57,7 @@ int isCloseBracket(char c)
 	}
 }
 
+//check if it is a correct float number
 bool isFloat(const std::string& str,int pos, int length) {
 	if (length == 0) return false;
 	if (str[pos] == '.' || str[pos+length-1] == '.') return false;
@@ -67,11 +71,13 @@ bool isFloat(const std::string& str,int pos, int length) {
 	return true;
 }
 
+//convert a string to a number
 float stringToNum(std::string str, int pos, int length) {
 	float num = stof(str.substr(pos, length), nullptr);
 	return num;
 }
 
+//convert a string to a number array and a operator array
 bool changeStrToArray(const std::string& str, std::vector<float>& number, std::vector<char>& legalOperator) {
 	int pos = str.length(), length = 0;
 	int k;
@@ -81,6 +87,7 @@ bool changeStrToArray(const std::string& str, std::vector<float>& number, std::v
 	//If it's a number put it in number array
 	for (int i = 0; i < str.length(); i++) {
 		for (int j = i; j < str.length(); j++) {
+			//find a substring has a form like a number to convert it into int/float
 			if (isdigit(str[j]) || str[j] == '.') {
 				k = j;
 				length++;
@@ -89,6 +96,7 @@ bool changeStrToArray(const std::string& str, std::vector<float>& number, std::v
 
 				}
 			}
+			//check if it is a operator or a bracket
 			if (isOperator(str[i]) || isCloseBracket(str[i]) || isOpenBracket(str[i])) {
 				legalOperator.push_back(str[i]);
 				if (isOpenBracket(str[i]) || (isCloseBracket(str[i]) && i < str.length() - 1 && isCloseBracket(str[i + 1]))) i = j;
@@ -96,6 +104,7 @@ bool changeStrToArray(const std::string& str, std::vector<float>& number, std::v
 					i = j + 1;
 				break;
 			}
+			//check if it is a close bracket or a space or the end of the input
 			if (isCloseBracket(str[j]) || str[j] == ' ' || j == str.length() - 1) {
 				if (isFloat(str, pos, length))
 					number.push_back(stringToNum(str, pos, length));
@@ -114,6 +123,7 @@ bool changeStrToArray(const std::string& str, std::vector<float>& number, std::v
 	return true;
 }
 
+//check if all bracket in the input are correct or not
 bool checkBracket(std::vector<char> legalOperator) {
 	std::vector<char> bracketArr;
 	//create bracket array
@@ -136,6 +146,7 @@ bool checkBracket(std::vector<char> legalOperator) {
 	return true;
 }
 
+//check if input validate or not
 bool checkValidate(const std::string& str) {
 	std::vector<float> number;
 	std::vector<char> legalOperator;
