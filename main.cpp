@@ -169,6 +169,8 @@ bool checkValidate(const std::string& str) {
 class BinTree
 {
 public:
+	BinTree() = default;
+	BinTree(const BinTree&) = delete;
 	void buildFromInfix(const std::string& str)
 	{
 		std::stack<Node *> postfix;
@@ -204,7 +206,6 @@ public:
 				while (!opStack.empty() && ((str[i] != '^' && getPrecedence(opStack.top()) >= getPrecedence(str[i])) || str[i] == '^' && getPrecedence(opStack.top()) > getPrecedence(str[i])))
 				{
 					pushFromStack();
-					//root = postfix.top();
 				}
 				opStack.push(str[i]);
 				++i;
@@ -261,8 +262,7 @@ private:
 	public:
 		Operand(float num)
 			: num(num)
-		{
-		}
+		{}
 		float calculate() const
 		{
 			return num;
@@ -284,8 +284,7 @@ private:
 	public:
 		Operator(char op, Node *left, Node *right)
 			: op(op), Node(left, right)
-		{
-		}
+		{}
 		float calculate() const
 		{
 			switch (op)
@@ -393,19 +392,4 @@ int main(int argc, char *argv[])
 		}
 	}
 	writeFile(argv[4], outputStream);
-
-	// DEBUG
-	// std::vector<std::string> input;
-	// readFile("input.txt", 16, input);
-	// for (auto i = input.begin(); i != input.end(); ++i)
-	// {
-	// 	if (checkValidate(*i))
-	// 	{
-	// 		BinTree tree;
-	// 		tree.buildFromInfix(*i);
-	// 		std::cout << "Infix: " << *i << std::endl;
-	// 		std::cout << "Postfix: " << tree.toPostfix() << std::endl;
-	// 		std::cout << "Result: " << tree.calculate() << std::endl;
-	// 	}
-	// }
 }
