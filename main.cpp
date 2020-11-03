@@ -76,7 +76,7 @@ bool changeStrToArray(const std::string& str, std::vector<float>& number, std::v
 	int pos = str.length(), length = 0;
 	int k;
 
-	if (isOperator(str[0]) || isOperator(str[str.length() - 1]) || !isCloseBracket(str[0]) || isOperator(str[str.length() - 1])) return false;
+	if (isOperator(str[0]) || isOperator(str[str.length() - 1]) || isCloseBracket(str[0]) || isOperator(str[str.length() - 1])) return false;
 
 	//If it's a number put it in number array
 	for (int i = 0; i < str.length(); i++) {
@@ -89,20 +89,19 @@ bool changeStrToArray(const std::string& str, std::vector<float>& number, std::v
 
 				}
 			}
-			if (isOperator(str[i]) || !isCloseBracket(str[i]) || !isOpenBracket(str[i])) {
+			if (isOperator(str[i]) || isCloseBracket(str[i]) || isOpenBracket(str[i])) {
 				legalOperator.push_back(str[i]);
-				if (!isOpenBracket(str[i]) || (!isCloseBracket(str[i]) && i < str.length() - 1 && !isCloseBracket(str[i + 1]))) i = j;
+				if (isOpenBracket(str[i]) || (isCloseBracket(str[i]) && i < str.length() - 1 && isCloseBracket(str[i + 1]))) i = j;
 				else
 					i = j + 1;
 				break;
 			}
-			if (!isCloseBracket(str[j]) || str[j] == ' ' || j == str.length() - 1) {
+			if (isCloseBracket(str[j]) || str[j] == ' ' || j == str.length() - 1) {
 				if (isFloat(str, pos, length))
 					number.push_back(stringToNum(str, pos, length));
-				//else return false;
 				length = 0;
 				pos = str.length();
-				if (!isCloseBracket(str[j])) {
+				if (isCloseBracket(str[j])) {
 
 					i = j - 1;
 				}
@@ -119,7 +118,7 @@ bool checkBracket(std::vector<char> legalOperator) {
 	std::vector<char> bracketArr;
 	//create bracket array
 	for (int i = 0; i < legalOperator.size(); i++) {
-		if (!isOpenBracket(legalOperator[i]) || !isCloseBracket(legalOperator[i])) bracketArr.push_back(legalOperator[i]);
+		if (isOpenBracket(legalOperator[i]) || isCloseBracket(legalOperator[i])) bracketArr.push_back(legalOperator[i]);
 	}
 	
 	int l = 0;
@@ -347,66 +346,66 @@ bool writeFile(const char *dir, const std::stringstream &stream)
 
 int main(int argc, char *argv[])
 {
-	// if (argc < 5)
-	// {
-	// 	std::cout << "Invalid arguments";
-	// 	return -1;
-	// }
+	if (argc < 5)
+	{
+		std::cout << "Invalid arguments";
+		return -1;
+	}
 
-	// std::vector<std::string> input;
-	// if (!readFile(argv[1], atoi(argv[2]), input))
-	// {
-	// 	std::cout << "Invalid input file";
-	// 	return -1;
-	// }
-
-	// std::function<void(const BinTree &, std::stringstream &)> outputMode;
-	// if (strcmp(argv[3], "-c") == 0)
-	// {
-	// 	outputMode = [](const BinTree &tree, std::stringstream &ss) {
-	// 		ss << tree.calculate() << std::endl;
-	// 	};
-	// }
-	// else if (strcmp(argv[3], "-t") == 0)
-	// {
-	// 	outputMode = [](const BinTree &tree, std::stringstream &ss) {
-	// 		ss << tree.toPostfix() << std::endl;
-	// 	};
-	// }
-	// else
-	// {
-	// 	std::cout << "Invalid arguments";
-	// 	return -1;
-	// }
-
-	// std::stringstream outputStream;
-	// for (auto i = input.begin(); i != input.end(); ++i)
-	// {
-	// 	if (checkValidate(*i))
-	// 	{
-	// 		BinTree tree;
-	// 		tree.buildFromInfix(*i);
-	// 		outputMode(tree, outputStream);
-	// 	}
-	// 	else
-	// 	{
-	// 		outputStream << 'E' << std::endl;
-	// 	}
-	// }
-	// writeFile(argv[4], outputStream);
-
-	//DEBUG
 	std::vector<std::string> input;
-	readFile("input.txt", 16, input);
+	if (!readFile(argv[1], atoi(argv[2]), input))
+	{
+		std::cout << "Invalid input file";
+		return -1;
+	}
+
+	std::function<void(const BinTree &, std::stringstream &)> outputMode;
+	if (strcmp(argv[3], "-c") == 0)
+	{
+		outputMode = [](const BinTree &tree, std::stringstream &ss) {
+			ss << tree.calculate() << std::endl;
+		};
+	}
+	else if (strcmp(argv[3], "-t") == 0)
+	{
+		outputMode = [](const BinTree &tree, std::stringstream &ss) {
+			ss << tree.toPostfix() << std::endl;
+		};
+	}
+	else
+	{
+		std::cout << "Invalid arguments";
+		return -1;
+	}
+
+	std::stringstream outputStream;
 	for (auto i = input.begin(); i != input.end(); ++i)
 	{
 		if (checkValidate(*i))
 		{
 			BinTree tree;
 			tree.buildFromInfix(*i);
-			std::cout << "Infix: " << *i << std::endl;
-			std::cout << "Postfix: " << tree.toPostfix() << std::endl;
-			std::cout << "Result: " << tree.calculate() << std::endl;
+			outputMode(tree, outputStream);
+		}
+		else
+		{
+			outputStream << 'E' << std::endl;
 		}
 	}
+	writeFile(argv[4], outputStream);
+
+	// DEBUG
+	// std::vector<std::string> input;
+	// readFile("input.txt", 16, input);
+	// for (auto i = input.begin(); i != input.end(); ++i)
+	// {
+	// 	if (checkValidate(*i))
+	// 	{
+	// 		BinTree tree;
+	// 		tree.buildFromInfix(*i);
+	// 		std::cout << "Infix: " << *i << std::endl;
+	// 		std::cout << "Postfix: " << tree.toPostfix() << std::endl;
+	// 		std::cout << "Result: " << tree.calculate() << std::endl;
+	// 	}
+	// }
 }
