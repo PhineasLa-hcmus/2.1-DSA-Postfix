@@ -8,6 +8,8 @@
 #include <math.h>
 #include <string.h>
 
+bool validate(const std::string &str);
+
 int getPrecedence(char c)
 {
 	switch (c)
@@ -393,7 +395,7 @@ int main(int argc, char *argv[])
 	std::stringstream outputStream;
 	for (auto i = input.begin(); i != input.end(); ++i)
 	{
-		if (checkValidate(*i))
+		if (validate(*i))
 		{
 			BinTree tree;
 			tree.buildFromInfix(*i);
@@ -410,13 +412,14 @@ int main(int argc, char *argv[])
 //Phineas's version
 bool validate(const std::string &str)
 {
-	bool mustOperator = false;
+	bool afterNum = false;
 	std::stack<int> bracketType;
 	for (auto i = str.begin(); i != str.end(); ++i)
 	{
 		if (isspace(*i))
 			continue;
-		else if (mustOperator)
+		//after a number can only be an operator or an open bracket
+		else if (afterNum)
 		{
 			if (int bracket = isCloseBracket(*i))
 			{
@@ -426,41 +429,38 @@ bool validate(const std::string &str)
 					return false;
 			}
 			else if (isOperator(*i))
-				mustOperator = false;
+				afterNum = false;
 			else
 				return false;
+		}
+		else if (int bracket = isOpenBracket(*i))
+		{
+			if (bracketType.empty() 
+			|| (!bracketType.empty() && bracket <= bracketType.top()))
+				bracketType.push(bracket);
+			else
+				return false;
+		}
+		else if (isdigit(*i))
+		{
+			bool foundDot = false;
+			for (; i != str.end(); ++i)
+			{
+				if (*i == '.')
+					if (foundDot == false)
+						foundDot = true;
+					else
+						return false;
+				else if (!isdigit(*i))
+					break;
+			}
+			--i;
+			if (*i == '.')
+				return false;
+			afterNum = true;
 		}
 		else
-		{
-			if (int bracket = isOpenBracket(*i))
-			{
-				if (bracketType.empty() 
-				|| (!bracketType.empty() && bracket <= bracketType.top()))
-					bracketType.push(bracket);
-				else
-					return false;
-			}
-			else if (isdigit(*i))
-			{
-				bool foundDot = false;
-				for (; i != str.end(); ++i)
-				{
-					if (*i == '.')
-						if (foundDot == false)
-							foundDot = true;
-						else
-							return false;
-					else if (!isdigit(*i))
-						break;
-				}
-				--i;
-				if (*i == '.')
-					return false;
-				mustOperator = true;
-			}
-			else
-				return false;
-		}
+			return false;
 	}
 	if (!bracketType.empty())
 		return false;
