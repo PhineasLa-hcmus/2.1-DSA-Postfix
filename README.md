@@ -34,10 +34,10 @@ Explain the algorithms, step-by-step example, for the following algorithms:
     - **Floating-point option**: Input expressions contain both integers and floating- point numbers. *(10 points max)*
 
 - Input: the file *"input.txt"* consists of infix expressions, each located on a single line. Example:	
-    - (1 + 1) ˆ 3
-    - 0. 3 \* 2 + 1.5
-    - 0. 4 4 3 + - *(error expression)*
-    - 0. (3.72 + 5.16) / 2.22
+    - (1 + 1) ^ 3
+    - 0.3 * 2 + 1.5
+    - 0.443 + - *(error expression)*
+    - (3.72 + 5.16) / 2.22
 
     There might be some error expressions in the input file. However, the expressions must follow the below format:
     - Operands and operators from these expressions must be separated by one single space " ".
